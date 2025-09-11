@@ -62,7 +62,7 @@ async def sso_login_redirect(
     if state:
         login_params["state"] = state
     
-    login_url = f"/sso/login-page?{urlencode(login_params)}"
+    login_url = f"/api/v1/sso/login-page?{urlencode(login_params)}"
     return RedirectResponse(url=login_url, status_code=302)
 
 
@@ -672,4 +672,68 @@ async def check_sso_session(
             success=False,
             code=500,
             message=f"会话检查失败: {str(e)}"
+        )
+
+
+@router.post("/verify-token")
+async def verify_sso_token(
+    request: Request,
+    db: AsyncSession = Depends(get_async_session)
+):
+    """
+    验证SSO访问令牌
+    供其他项目的后端服务调用，验证前端传来的访问令牌
+    """
+    try:
+        # 获取请求体数据
+        body = await request.json()
+        token = body.get("token")
+        project = body.get("project")
+        
+        if not token:
+            return BaseResponse(
+                success=False,
+                code=400,
+                message="缺少token参数"
+            )
+        
+        if not project:
+            return BaseResponse(
+                success=False,
+                code=400,
+                message="缺少project参数"
+            )
+        
+        # 验证token并获取用户信息
+        user_info = await auth_service.get_user_by_access_token(db, token, project)
+        
+        # 获取用户权限
+        permissions = await rbac_service.get_user_project_permissions(
+            db, user_info["user_id"], project
+        )
+        
+        # 构建响应数据
+        response_data = {
+            **user_info,
+            "permissions": permissions,
+            "project_access": True
+        }
+        
+        return BaseResponse(
+            success=True,
+            message="Token验证成功",
+            data=response_data
+        )
+        
+    except HTTPException as e:
+        return BaseResponse(
+            success=False,
+            code=e.status_code,
+            message=e.detail
+        )
+    except Exception as e:
+        return BaseResponse(
+            success=False,
+            code=500,
+            message=f"Token验证失败: {str(e)}"
         )

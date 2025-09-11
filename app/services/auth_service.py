@@ -255,6 +255,19 @@ class AuthService:
             expires_delta=access_token_expires
         )
         
+        # 获取用户权限
+        from app.services.rbac_service import RBACService
+        from app.crud.rbac import project_crud
+        rbac_service = RBACService()
+        
+        # 通过项目代码获取项目UUID
+        project_obj = await project_crud.get_by_code(db, code=project)
+        project_id = project_obj.id if project_obj else None
+        
+        # 获取用户在该项目中的权限
+        user_permissions = await rbac_service.get_user_permissions(db, user.id, project_id)
+        permission_codes = list(user_permissions) if isinstance(user_permissions, set) else []
+        
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -263,6 +276,8 @@ class AuthService:
             "username": user.username,
             "email": user.email,
             "display_name": user.display_name,
+            "is_superuser": user.is_superuser,
+            "permissions": permission_codes,
             "project": project
         }
 

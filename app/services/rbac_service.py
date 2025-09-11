@@ -30,7 +30,7 @@ class RBACService:
         permissions = set()
 
         # 查询用户角色
-        user_roles = await user_role_crud.get_user_roles(db, user_id, project_id)
+        user_roles = await user_role_crud.get_user_roles(db, user_id=user_id, project_id=project_id)
 
         for user_role in user_roles:
             # 检查角色是否激活且未过期
@@ -40,7 +40,7 @@ class RBACService:
                 continue
 
             # 获取角色权限
-            role_permissions = await permission_crud.get_role_permissions(db, user_role.role_id)
+            role_permissions = await permission_crud.get_role_permissions(db, role_id=user_role.role_id)
             for perm in role_permissions:
                 permissions.add(perm.code)
 
@@ -114,7 +114,7 @@ class RBACService:
             project_id: Optional[uuid.UUID] = None
     ) -> List[Role]:
         """获取用户角色"""
-        return await role_crud.get_user_roles(db, user_id, project_id)
+        return await role_crud.get_user_roles(db, user_id=user_id, project_id=project_id)
 
     async def check_user_project_access(
             self,
@@ -142,7 +142,7 @@ class RBACService:
             return False
         
         # 检查用户是否有该项目的有效角色
-        user_roles = await user_role_crud.get_user_roles(db, user_id, project.id)
+        user_roles = await user_role_crud.get_user_roles(db, user_id=user_id, project_id=project.id)
         active_roles = [
             role for role in user_roles
             if role.is_active and (not role.expires_at or role.expires_at > datetime.utcnow())
