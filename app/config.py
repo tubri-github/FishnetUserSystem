@@ -79,10 +79,11 @@ class Settings(BaseSettings):
     ALLOWED_HEADERS: List[str] = ["*"]
 
     # 项目配置
-    ALLOWED_PROJECTS: List[str] = ["FN2", "FMMT", "project-a", "project-b", "project-c"]
+    ALLOWED_PROJECTS: List[str] = ["FN2", "FMMT", "fishair", "project-a", "project-b", "project-c"]
     PROJECT_URLS: dict = {
-        "FN2": "http://localhost:5173",
+        "FN2": "http://localhost:5174",
         "FMMT": "http://localhost:9528/tummt",
+        "fishair": "http://127.0.0.1:8003",
         "project-a": "http://localhost:8001",
         "project-b": "http://localhost:8002",
         "project-c": "http://localhost:8003"

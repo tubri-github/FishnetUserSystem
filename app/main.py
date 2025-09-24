@@ -12,7 +12,7 @@ from app.database import engine
 
 # 导入API路由
 try:
-    from app.api.v1 import auth, users, roles, permissions, oauth, projects, audit, sso
+    from app.api.v1 import auth, users, roles, permissions, oauth, projects, audit, sso, fishair
 
     API_IMPORTS_OK = True
 except ImportError as e:
@@ -180,6 +180,12 @@ if API_IMPORTS_OK:
         sso.router,
         prefix=f"{settings.API_PREFIX}/sso",
         tags=["单点登录"]
+    )
+
+    app.include_router(
+        fishair.router,
+        prefix=f"{settings.API_PREFIX}/fishair",
+        tags=["FishAIR代理"]
     )
 else:
     logger.warning("⚠️ Some API routes are not available due to import errors")

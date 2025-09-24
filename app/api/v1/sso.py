@@ -1,5 +1,6 @@
 # app/api/v1/sso.py - SSO单点登录API
 from typing import Any, Optional
+from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Response, Request, Query
 from fastapi.responses import RedirectResponse, HTMLResponse
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,6 +14,7 @@ from app.services.user_service import UserService
 from app.services.rbac_service import RBACService
 from app.dependencies import get_current_active_user
 from app.models.user import User
+from app.core.security import SecurityUtils
 from app.config import get_settings
 
 router = APIRouter()
@@ -655,16 +657,53 @@ async def check_sso_session(
         # 检查项目访问权限
         has_access = await rbac_service.check_user_project_access(db, user.id, project)
         
+        # 如果用户有项目访问权限，获取详细的用户信息、权限和角色
+        user_data = {
+            "user_id": str(user.id),
+            "username": user.username,
+            "email": user.email,
+            "display_name": user.display_name,
+            "is_superuser": user.is_superuser,
+            "has_project_access": has_access
+        }
+        
+        if has_access:
+            # 获取项目对象
+            from app.crud.rbac import project_crud
+            project_obj = await project_crud.get_by_code(db, code=project)
+            project_id = project_obj.id if project_obj else None
+            
+            # 获取权限和角色
+            permissions = await rbac_service.get_user_permissions(db, user.id, project_id)
+            user_roles = await rbac_service.get_user_roles(db, user.id, project_id)
+            
+            role_data = []
+            for role in user_roles:
+                role_data.append({
+                    "id": str(role.id),
+                    "name": role.name,
+                    "code": role.code,
+                    "description": role.description,
+                    "is_system": role.is_system
+                })
+            
+            user_data.update({
+                "permissions": list(permissions) if isinstance(permissions, set) else [],
+                "roles": role_data,
+                "access_token": SecurityUtils.create_jwt_token(
+                    data={
+                        "sub": str(user.id), 
+                        "project": project,
+                        "type": "sso_access"
+                    },
+                    expires_delta=timedelta(minutes=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+                )
+            })
+        
         return BaseResponse(
             success=True,
             message="会话有效",
-            data={
-                "user_id": str(user.id),
-                "username": user.username,
-                "email": user.email,
-                "display_name": user.display_name,
-                "has_project_access": has_access
-            }
+            data=user_data
         )
         
     except Exception as e:

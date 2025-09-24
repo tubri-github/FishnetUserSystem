@@ -268,6 +268,18 @@ class AuthService:
         user_permissions = await rbac_service.get_user_permissions(db, user.id, project_id)
         permission_codes = list(user_permissions) if isinstance(user_permissions, set) else []
         
+        # 获取用户在该项目中的角色
+        user_roles = await rbac_service.get_user_roles(db, user.id, project_id)
+        role_data = []
+        for role in user_roles:
+            role_data.append({
+                "id": str(role.id),
+                "name": role.name,
+                "code": role.code,
+                "description": role.description,
+                "is_system": role.is_system
+            })
+        
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -278,6 +290,7 @@ class AuthService:
             "display_name": user.display_name,
             "is_superuser": user.is_superuser,
             "permissions": permission_codes,
+            "roles": role_data,
             "project": project
         }
 
