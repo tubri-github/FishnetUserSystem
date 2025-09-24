@@ -329,7 +329,7 @@ async def sso_login_page(
                 loginBtn.textContent = 'Signing in...';
                 
                 try {{
-                    const response = await fetch('/api/v1/auth/login', {{
+                    const response = await fetch('{settings.URL_PREFIX}{settings.API_PREFIX}/auth/login', {{
                         method: 'POST',
                         headers: {{
                             'Content-Type': 'application/json'
@@ -358,7 +358,7 @@ async def sso_login_page(
                             // 直接登录，跳转到认证中心首页或仪表板
                             showSuccess('Sign in successful!');
                             setTimeout(() => {{
-                                window.location.href = '/api/v1/auth/me'; // 或其他合适的页面
+                                window.location.href = '{settings.URL_PREFIX}{settings.API_PREFIX}/auth/me'; // 或其他合适的页面
                             }}, 1000);
                         }}
                     }} else {{
@@ -393,7 +393,7 @@ async def sso_login_page(
                     callbackParams.append('state', state);
                 }}
                 
-                window.location.href = `/api/v1/auth/google?${{callbackParams.toString()}}`;
+                window.location.href = `{settings.URL_PREFIX}{settings.API_PREFIX}/auth/google?${{callbackParams.toString()}}`;
             }}
             
             function loginWithOrcid() {{
@@ -405,7 +405,7 @@ async def sso_login_page(
                     callbackParams.append('state', state);
                 }}
                 
-                window.location.href = `/api/v1/auth/orcid?${{callbackParams.toString()}}`;
+                window.location.href = `{settings.URL_PREFIX}{settings.API_PREFIX}/auth/orcid?${{callbackParams.toString()}}`;
             }}
         </script>
     </body>
