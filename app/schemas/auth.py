@@ -1,8 +1,10 @@
 # app/schemas/auth.py - 认证数据模式
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, TYPE_CHECKING
 from pydantic import BaseModel, EmailStr
 from app.schemas.common import BaseResponse
+
+# 在文件末尾添加model_rebuild调用来解决前向引用
 
 class LoginRequest(BaseModel):
     username: str  # 可以是用户名或邮箱
@@ -51,3 +53,7 @@ class PasswordChangeRequest(BaseModel):
 
 class PasswordResetRequest(BaseModel):
     email: EmailStr
+
+
+# 解决前向引用问题
+TokenResponse.model_rebuild()
