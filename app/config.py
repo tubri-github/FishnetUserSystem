@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "统一认证授权系统"
     VERSION: str = "1.0.0"
     API_PREFIX: str = "/api/v1"
+    URL_PREFIX: str = ""  # 用于nginx代理路径，如 "/auth"
     DEBUG: bool = False
 
     # 服务器配置
@@ -79,14 +80,11 @@ class Settings(BaseSettings):
     ALLOWED_HEADERS: List[str] = ["*"]
 
     # 项目配置
-    ALLOWED_PROJECTS: List[str] = ["FN2", "FMMT", "fishair", "project-a", "project-b", "project-c"]
+    ALLOWED_PROJECTS: List[str] = ["FN2", "FMMT", "fishair"]
     PROJECT_URLS: dict = {
-        "FN2": "http://localhost:5174",
-        "FMMT": "http://localhost:9528/tummt",
-        "fishair": "http://127.0.0.1:8003",
-        "project-a": "http://localhost:8001",
-        "project-b": "http://localhost:8002",
-        "project-c": "http://localhost:8003"
+        "FN2": "https://fishnet.tulane.edu",
+        "FMMT": "http://localhost:9528/tummt/",
+        "fishair": "https://fishair.org"
     }
 
     # 审计配置

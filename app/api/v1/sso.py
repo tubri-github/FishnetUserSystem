@@ -64,7 +64,8 @@ async def sso_login_redirect(
     if state:
         login_params["state"] = state
     
-    login_url = f"/api/v1/sso/login-page?{urlencode(login_params)}"
+    # 使用配置的URL前缀，确保重定向路径与原始访问路径一致
+    login_url = f"{settings.URL_PREFIX}{settings.API_PREFIX}/sso/login-page?{urlencode(login_params)}"
     return RedirectResponse(url=login_url, status_code=302)
 
 
@@ -83,7 +84,7 @@ async def sso_login_page(
     if session_token and redirect_uri and project:
         # 用户已登录且有重定向参数，直接处理回调
         return RedirectResponse(
-            url=f"/api/v1/sso/callback?redirect_uri={redirect_uri}&project={project}&state={state or ''}"
+            url=f"{settings.URL_PREFIX}{settings.API_PREFIX}/sso/callback?redirect_uri={redirect_uri}&project={project}&state={state or ''}"
         )
     
     # 返回登录页面HTML
@@ -352,7 +353,7 @@ async def sso_login_page(
                             if (state) {{
                                 callbackParams.append('state', state);
                             }}
-                            window.location.href = `/api/v1/sso/callback?${{callbackParams.toString()}}`;
+                            window.location.href = `{settings.URL_PREFIX}{settings.API_PREFIX}/sso/callback?${{callbackParams.toString()}}`;
                         }} else {{
                             // 直接登录，跳转到认证中心首页或仪表板
                             showSuccess('Sign in successful!');
@@ -439,7 +440,7 @@ async def sso_callback(
             if state:
                 login_params["state"] = state
             
-            login_url = f"/api/v1/sso/login-page?{urlencode(login_params)}"
+            login_url = f"{settings.URL_PREFIX}{settings.API_PREFIX}/sso/login-page?{urlencode(login_params)}"
             return RedirectResponse(url=login_url)
         
         # 验证会话并获取用户信息
@@ -454,7 +455,7 @@ async def sso_callback(
             if state:
                 login_params["state"] = state
             
-            login_url = f"/api/v1/sso/login-page?{urlencode(login_params)}"
+            login_url = f"{settings.URL_PREFIX}{settings.API_PREFIX}/sso/login-page?{urlencode(login_params)}"
             return RedirectResponse(url=login_url)
         
         # 检查用户对该项目的权限
